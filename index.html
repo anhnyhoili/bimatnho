@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lovely</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg1:#ffeaf1;--bg2:#ffc2d6;--card:rgba(255,255,255,.88);--key:rgba(255,255,255,.78);
+  --pink:#f2638c;--pink2:#ff8fb0;--text:#7b4a5c;--dim:rgba(150,80,105,.38);--dot:245,100,145;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--bg1:#3d202e;--bg2:#5f2d46;--card:rgba(58,30,44,.92);--key:rgba(255,255,255,.1);--text:#ffdbe6;--dim:rgba(18,4,10,.6)}
+}
+:root[data-theme="dark"]{--bg1:#3d202e;--bg2:#5f2d46;--card:rgba(58,30,44,.92);--key:rgba(255,255,255,.1);--text:#ffdbe6;--dim:rgba(18,4,10,.6)}
+html,body{height:100%;margin:0}
+body{position:relative;overflow:hidden;color:var(--text);font-family:"Mali","Segoe UI",system-ui,sans-serif;
+  background:radial-gradient(circle at 50% 45%,var(--bg1) 0%,var(--bg2) 100%)}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.scene{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .7s ease,transform .7s ease}
+.scene.off{opacity:0;pointer-events:none;transform:scale(.96)}
+
+/* khóa */
+.panel{width:min(300px,84vw);padding:26px 22px 24px;border-radius:28px;background:var(--card);text-align:center;
+  box-shadow:0 18px 50px rgba(242,99,140,.22),inset 0 0 0 1px rgba(255,255,255,.6);backdrop-filter:blur(8px)}
+.panel h2{margin:0 0 14px;font-size:1.35rem;color:var(--pink)}
+.dots{display:flex;justify-content:center;gap:12px;margin-bottom:18px}
+.dots i{width:13px;height:13px;border-radius:50%;border:2px solid var(--pink2);transition:background .2s,transform .2s}
+.dots i.on{background:var(--pink);transform:scale(1.15)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.7);background:var(--key);color:var(--text);
+  font:600 1.15rem "Mali",sans-serif;cursor:pointer;box-shadow:0 4px 10px rgba(242,99,140,.12);transition:transform .12s,background .12s}
+.pad button:active{transform:scale(.92);background:var(--pink2);color:#fff}
+.pad button:focus-visible,.music:focus-visible,.close:focus-visible,#bq:focus-visible{outline:3px solid var(--pink);outline-offset:3px}
+.pad .gap{visibility:hidden}
+.pad .del{color:#e0334f}
+.shake{animation:shake .45s}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+
+/* bó hoa */
+#bq{width:min(360px,82vw);cursor:pointer;background:none;border:0;padding:0;-webkit-tap-highlight-color:transparent;
+  animation:pop 1s cubic-bezier(.2,1.3,.4,1) both}
+#bq svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 14px 18px rgba(200,70,110,.18))}
+#sway{transform-origin:150px 330px;animation:sway 5s ease-in-out infinite}
+#bq.hit #sway{animation:hit .6s ease}
+@keyframes pop{from{opacity:0;transform:scale(.6) translateY(30px)}to{opacity:1;transform:none}}
+@keyframes sway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+@keyframes hit{40%{transform:scale(1.08) rotate(2deg)}100%{transform:none}}
+.hint{margin-top:14px;font-size:.95rem;opacity:.8}
+
+/* lời chúc */
+#modal{background:var(--dim);z-index:3}
+.card{width:min(420px,86vw);padding:26px 26px 24px;border-radius:22px;background:var(--card);
+  box-shadow:0 20px 60px rgba(120,40,70,.3);backdrop-filter:blur(6px)}
+.card h1{margin:0 0 14px;font-size:1.4rem;line-height:1.35;color:var(--pink)}
+.card p{margin:0 0 20px;min-height:9.2em;line-height:1.85;font-size:.98rem}
+.card p.typing::after{content:"";display:inline-block;width:2px;height:1em;margin-left:2px;background:var(--pink);vertical-align:-2px;animation:blink .8s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.close{display:block;margin:0 auto;padding:10px 30px;border:0;border-radius:999px;color:#fff;cursor:pointer;
+  font:700 .95rem "Mali",sans-serif;background:linear-gradient(135deg,#ff86a9,#f2527f);box-shadow:0 8px 18px rgba(242,82,127,.4)}
+
+/* nhạc */
+.music{position:fixed;z-index:5;left:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));padding:13px 22px;border-radius:999px;border:0;
+  background:var(--key);color:var(--text);font:700 .85rem "Mali",sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(242,99,140,.2);backdrop-filter:blur(6px)}
+
+/* sticker thỏ */
+.sticker{position:fixed;z-index:2;width:62px;padding:6px;border-radius:8px;background:#fff;box-shadow:0 6px 14px rgba(0,0,0,.18);
+  pointer-events:none;animation:st 3.8s ease-in-out forwards}
+.sticker svg{display:block;width:100%}
+@keyframes st{0%{opacity:0;transform:scale(.2) rotate(var(--r0))}12%{opacity:1;transform:scale(1.1) rotate(var(--r1))}
+  22%{transform:scale(1) rotate(var(--r1))}85%{opacity:1;transform:translateY(-26px) rotate(var(--r0))}100%{opacity:0;transform:translateY(-40px) rotate(var(--r0))}}
+
+@media (prefers-reduced-motion:reduce){#sway,#bq{animation:none}.sticker{animation-duration:3s}}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<!-- 1. Nhập mật khẩu -->
+<section class="scene" id="lock">
+  <div class="panel" id="panel">
+    <h2>Nhập pass nha</h2>
+    <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+    <div class="pad" id="pad"></div>
+  </div>
+</section>
+
+<!-- 2. Bó hoa -->
+<section class="scene off" id="stage">
+  <button id="bq" aria-label="Chạm vào bó hoa"><svg id="bouquet" viewBox="0 0 300 340"></svg></button>
+  <div class="hint">Chạm vào bó hoa nhé 🌷</div>
+</section>
+
+<!-- 3. Lời chúc -->
+<section class="scene off" id="modal" role="dialog" aria-modal="true" aria-labelledby="ttl">
+  <div class="card">
+    <h1 id="ttl"></h1>
+    <p id="msg"></p>
+    <button class="close" id="close">Đóng</button>
+  </div>
+</section>
+
+<button class="music" id="music">Play Music</button>
+
+<script>
+/* ====== CHỈNH Ở ĐÂY ====== */
+const PASS  = "2010";                                  // mật khẩu 4 số
+const TITLE = "Gửi em, cô gái bé nhỏ của anh!";
+const MSG   = "Chúc công chúa 20/10 thật hạnh phúc nhé! Mong rằng mỗi ngày trôi qua em đều cảm nhận được sự yêu thương và trân trọng từ anh. Dù ngoài kia có nhiều sóng gió thế nào, anh vẫn sẽ luôn ở đây nắm chặt tay em. Yêu em thật nhiều!";
+/* ========================= */
+
+const $ = id => document.getElementById(id);
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- hiệu ứng nền: chấm hồng + cánh hoa ---------- */
+const cv = $("fx"), cx = cv.getContext("2d");
+let W, H; const dpr = Math.min(devicePixelRatio || 1, 2);
+function size(){ W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr,0,0,dpr,0,0); }
+addEventListener("resize", size); size();
+const dots = Array.from({length: 46}, () => ({x: rnd(0,W), y: rnd(0,H), r: rnd(1,3), vx: rnd(-.12,.12), vy: -rnd(.08,.3), a: rnd(.25,.7)}));
+let petals = [];
+function burst(){
+  for (let i = 0; i < 48; i++) petals.push({x: W/2 + rnd(-70,70), y: H/2 + rnd(-90,-20), vx: rnd(-1.8,1.8), vy: rnd(-4,-1),
+    r: rnd(4,9), rot: rnd(0,6), vr: rnd(-.12,.12), life: 1});
+}
+function frame(){
+  cx.clearRect(0,0,W,H);
+  for (const d of dots){
+    d.x += d.vx; d.y += d.vy;
+    if (d.y < -6){ d.y = H + 6; d.x = rnd(0,W); }
+    cx.fillStyle = "rgba(245,100,145," + d.a + ")";
+    cx.beginPath(); cx.arc(d.x, d.y, d.r, 0, 7); cx.fill();
+  }
+  petals = petals.filter(p => p.life > 0);
+  for (const p of petals){
+    p.vy += .05; p.x += p.vx; p.y += p.vy; p.vx *= .99; p.rot += p.vr; p.life -= .006;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.globalAlpha = Math.max(p.life, 0);
+    cx.fillStyle = "#ff9fbd"; cx.beginPath(); cx.ellipse(0, 0, p.r, p.r * .58, 0, 0, 7); cx.fill(); cx.restore();
+  }
+  requestAnimationFrame(frame);
+}
+frame();
+
+/* ---------- bàn phím mật khẩu ---------- */
+let buf = "";
+const dotEls = [...$("dots").children];
+["1","2","3","4","5","6","7","8","9","","0","x"].forEach(k => {
+  const b = document.createElement("button");
+  if (k === "") { b.className = "gap"; b.disabled = true; }
+  else {
+    b.textContent = k === "x" ? "✕" : k;
+    if (k === "x") { b.className = "del"; b.setAttribute("aria-label", "Xóa"); }
+    b.onclick = () => press(k);
+  }
+  $("pad").appendChild(b);
+});
+function paint(){ dotEls.forEach((d, i) => d.classList.toggle("on", i < buf.length)); }
+function press(k){
+  if (k === "x") buf = buf.slice(0, -1);
+  else if (buf.length < 4) buf += k;
+  paint();
+  if (buf.length === 4) setTimeout(check, 220);
+}
+function check(){
+  if (buf === PASS){
+    $("lock").classList.add("off");
+    $("stage").classList.remove("off");
+    setTimeout(burst, 500);
+  } else {
+    $("panel").classList.add("shake");
+    setTimeout(() => $("panel").classList.remove("shake"), 460);
+    buf = ""; paint();
+  }
+}
+addEventListener("keydown", e => {
+  if (!$("lock").classList.contains("off")){
+    if (/^[0-9]$/.test(e.key)) press(e.key);
+    else if (e.key === "Backspace") press("x");
+  }
+});
+
+/* ---------- bó tulip vẽ bằng SVG ---------- */
+(function(){
+  const cols = {
+    p: ["#f5779f", "#ffa3c1", "#f35d8d"],   // sau, trái, phải
+    w: ["#ece5e9", "#ffffff", "#f7f2f5"]
+  };
+  // [x, y, nghiêng, màu, cỡ]
+  const fl = [[-66,78,-40,"p",.92],[-34,46,-20,"w",1],[0,28,0,"p",1.12],[34,46,20,"w",1],[66,78,40,"p",.92],
+              [-48,122,-30,"w",.86],[12,100,7,"p",.92],[52,126,27,"p",.86],[-12,156,-9,"w",.8]];
+  let s = '<g id="sway">';
+  fl.forEach(f => s += `<path d="M${150+f[0]} ${f[1]} Q${150+f[0]*.4} ${f[1]+120} 150 292" stroke="#4f9a5a" stroke-width="3.4" fill="none" stroke-linecap="round"/>`);
+  s += '<path d="M150 292C104 248 74 206 62 152C104 190 138 236 150 292Z" fill="#6fb06b"/>';
+  s += '<path d="M150 292C196 248 226 206 238 152C196 190 162 236 150 292Z" fill="#58a064"/>';
+  fl.forEach(f => {
+    const c = cols[f[3]];
+    s += `<g class="bl" transform="translate(${150+f[0]} ${f[1]}) rotate(${f[2]}) scale(${f[4]})">
+      <path d="M-20 0C-26-28-14-46-9-58C-4-48 0-44 0-40C0-44 4-48 9-58C14-46 26-28 20 0C10 8-10 8-20 0Z" fill="${c[0]}"/>
+      <path d="M-20 0C-24-26-12-42 0-50C2-30-2-10 6 6C-4 8-14 6-20 0Z" fill="${c[1]}"/>
+      <path d="M20 0C24-26 12-42 0-50C-2-30 2-10-6 6C4 8 14 6 20 0Z" fill="${c[2]}"/></g>`;
+  });
+  for (let i = 0; i < 16; i++){
+    const x = 150 + rnd(-95, 95), y = rnd(70, 190);
+    s += `<g transform="translate(${x} ${y})" fill="#fff" opacity=".95">` +
+      [0,72,144,216,288].map(a => `<ellipse cx="0" cy="-3.4" rx="1.9" ry="3" transform="rotate(${a})"/>`).join("") +
+      '<circle r="1.4" fill="#ffd96b"/></g>';
+  }
+  s += '<path d="M120 246L180 246L171 322L129 322Z" fill="#fff"/>' +
+       '<path d="M133 250L135 320M146 250L146 320M158 250L157 320M168 250L165 320" stroke="#e6dde1" stroke-width="1.6"/>' +
+       '<path d="M140 322L160 322L158 338L142 338Z" fill="#4f8f50"/></g>';
+  $("bouquet").innerHTML = s;
+})();
+
+/* ---------- lời chúc (gõ chữ) ---------- */
+let typer;
+function openMsg(){
+  $("ttl").textContent = TITLE;
+  const p = $("msg"); p.textContent = ""; p.classList.add("typing");
+  $("modal").classList.remove("off");
+  let i = 0; clearInterval(typer);
+  typer = setInterval(() => {
+    p.textContent = MSG.slice(0, ++i);
+    if (i >= MSG.length){ clearInterval(typer); p.classList.remove("typing"); }
+  }, 32);
+  setTimeout(() => $("close").focus({preventScroll:true}), 60);
+}
+let stickersOn = false;
+$("bq").onclick = () => {
+  const b = $("bq"); b.classList.remove("hit"); void b.offsetWidth; b.classList.add("hit");
+  burst(); setTimeout(openMsg, 520);
+};
+$("close").onclick = () => {
+  clearInterval(typer);
+  $("modal").classList.add("off");
+  $("bq").focus({preventScroll:true});
+  if (!stickersOn){ stickersOn = true; spawn(); setInterval(spawn, 900); }
+};
+
+/* ---------- sticker thỏ bay quanh bó hoa ---------- */
+const BUNNY = '<svg viewBox="0 0 60 60"><g fill="#fff" stroke="#444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+  '<ellipse cx="22" cy="14" rx="5" ry="12" transform="rotate(-8 22 14)"/><ellipse cx="38" cy="14" rx="5" ry="12" transform="rotate(8 38 14)"/>' +
+  '<ellipse cx="30" cy="38" rx="18" ry="15"/></g><ellipse cx="22" cy="14" rx="2" ry="7" fill="#ffc2d3"/><ellipse cx="38" cy="14" rx="2" ry="7" fill="#ffc2d3"/>' +
+  '<circle cx="24" cy="36" r="1.8" fill="#444"/><circle cx="36" cy="36" r="1.8" fill="#444"/>' +
+  '<path d="M28 41q2 2 4 0" stroke="#444" fill="none" stroke-width="1.6" stroke-linecap="round"/>' +
+  '<ellipse cx="18.5" cy="41" rx="3.5" ry="2.2" fill="#ffb3c6"/><ellipse cx="41.5" cy="41" rx="3.5" ry="2.2" fill="#ffb3c6"/></svg>';
+function spawn(){
+  if (document.hidden || !$("modal").classList.contains("off")) return;
+  const el = document.createElement("div");
+  el.className = "sticker"; el.innerHTML = BUNNY;
+  const left = Math.random() < .5;
+  const x = left ? rnd(.03, .30) : rnd(.62, .88);
+  el.style.left = (x * W) + "px"; el.style.top = rnd(.08, .78) * H + "px";
+  el.style.setProperty("--r0", rnd(-22, 22) + "deg"); el.style.setProperty("--r1", rnd(-12, 12) + "deg");
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3900);
+}
+
+/* ---------- nhạc hộp (WebAudio, không cần file mp3) ---------- */
+const melody = [659,784,880,784,659,587,523,587, 659,784,659,587,523,440,523,587];
+const bass   = [131,131,110,110,98,98,131,131];
+let ac, playing = false, tick, step = 0;
+function note(f, t, v, d){
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = "sine"; o.frequency.value = f;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+  o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .05);
+}
+function beat(){
+  const t = ac.currentTime + .03, f = melody[step % melody.length];
+  note(f, t, .13, 1.2); note(f * 2, t, .035, .6);
+  if (step % 2 === 0) note(bass[(step / 2) % bass.length], t, .1, 1.6);
+  step++;
+}
+$("music").onclick = () => {
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === "suspended") ac.resume();
+  playing = !playing;
+  $("music").textContent = playing ? "Pause Music" : "Play Music";
+  clearInterval(tick);
+  if (playing){ beat(); tick = setInterval(beat, 440); }
+};
+</script>
+</body>
+</html>
